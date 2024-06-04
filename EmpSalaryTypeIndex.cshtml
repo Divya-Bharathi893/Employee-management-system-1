@@ -1,0 +1,376 @@
+﻿@model List<DGHCM.Models.SalaryTypeMaster>
+
+
+@{
+    ViewBag.Title = "EmpSalaryTypeIndex";
+}
+
+<!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.6/css/jquery.dataTables.min.css">
+
+<!-- DataTables JS -->
+<script type="text/javascript" src="https://cdn.datatables.net/1.11.6/js/jquery.dataTables.min.js"></script>
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header  text-black d-flex flex-wrap justify-content-between align-items-center">
+
+
+            <div class="card-title text-black mb-0 p-0">Salary Type Details</div>
+            <div>
+                <button type="button" class="btn btn-transparent" id="btn-AddSalary"><i class="fa-solid fa-sack-dollar fa-lg"></i>&nbsp;Add Salary</button>
+            </div>
+        </div>
+        <div class="card-body ">
+            <form class="main" name="Display" id="file">
+                <table class="table table-bordered table-striped table-hover mt-2" id="salaryTable">
+                    <thead class="bg-secondary-light">
+                        <tr align="center">
+                            <th scope="col">S.No</th>
+                            <th scope="col">Salary Type</th>
+                            <th hidden="hidden" scope="col">SalaryType Id</th>
+                            <th scope="col">Allowance Or Deduction</th>
+                            <th scope="col">Is Fixed Pay</th>
+                            <th scope="col">Status</th>
+                            <th colspan=2>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center" id="table_data"></tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="madal fade modal" id="SalaryModal" style="display:none">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Add Salary Type</div>
+                @*<div class="card-title text-black mb-0 p-0">Add Salary Type</div>*@
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="form">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Salary Type</span>
+                        <input type="text" class="form-control" id="SalaryType" name="SalaryTypeName" placeholder="enter type"  required>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-text">
+                            <input class="form-check-input col-sm-2 " style="float:right;" type="checkbox" id="AllowOrDeduct" name="AllowanceAndDeduction">
+                        </div>
+                        <span class="input-group-text">AllowanceOrDeduction</span>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-text">
+                            <input class="form-check-input col-sm-2" style="float:right;" type="checkbox" id="active" name="IsActive">
+                        </div>
+                        <span class="input-group-text">IsActive</span>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-text">
+                            <input class="form-check-input col-sm-2" style="float: right;" type="checkbox" id="FixedPay" name="IsFixedPay">
+                            <input hidden id="hdnSalaryTId" name="hdnsalaryTId" />
+                        </div>
+                        <span class="input-group-text">IsFixedPay</span>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <a href="#" class="btn btn-danger" data-dismiss="modal" onclick="HideModal();">Cancel</a>
+                <a href="#" class="btn btn-success" onclick="AddSalary();" id="AdSalary">Save</a>
+                <a href="#" class="btn btn-success" onclick="UpdateSalary();" id="EditSalary" type="submit">Update</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur fade" id="myModal1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header justify-content-between align-items-center">
+
+                <h5 class="modal-title">Delete Salary</h5>
+                <button type="button" class="btn-close delete" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <h4>Are you sure? </h4>
+                <p>You want to delete this.</p>
+                <div style="text-align:center;display:none" id="loaderDiv" ;></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-danger" data-dismiss="modal" onclick="HideModal();">Cancel</a>
+                <a href="#" class="btn btn-success" onclick="DeleteSalary()">Confirm</a>
+            </div>
+
+        </div>
+    </div>
+    <input type="hidden" id="hiddenSalaryTypeId" value="@Url.Action("SalaryTypeList", "EmployeeController")" />
+</div>
+<script>
+
+    /*Read Data*/
+    $(document).ready(function () {
+        ShowSalaryData();
+        /*// Initialize DataTable with pagination options
+        $('#salaryTable').DataTable({
+            "paging": true, // Enable pagination
+            "lengthChange": false, // Disable page size changing
+            "searching": false, // Disable search
+            "ordering": false, // Disable sorting
+            "info": true, // Show information (pagination summary)
+            "autoWidth": false, // Disable auto-width calculation
+            "responsive": true // Enable responsive design
+        });*/
+        $('#btn-AddSalary').click(function () {
+            $('#SalaryModal').modal('show');
+            $('#modalTitle').text('Add Salary Type');
+            $('#AdSalary').css('display', 'block');
+            $('#EditSalary').css('display', 'none');
+
+        });
+    })
+    function ShowSalaryData() {
+        var url = $('#hiddenSalaryTypeId').val();
+        $.ajax({
+            url: 'SalaryTypeList',
+            type: 'Get',
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                if (result.length == 0) {
+                    var object = "";
+                    object += '<tr>';
+                    object += '<td colspan="6">' + 'Salary Type not available' + '</td>';
+                    object += '</tr>';
+                    $('#table_data').html(object);
+                } else {
+                    var object = "";
+                    for (var i = 0; i < result.length; i++) {
+                        object += '<tr>';
+                        object += '<td>' + [i + 1] + '</td>';
+                        object += '<td class="text-start">' + result[i].SalaryTypeName + '</td>';
+                        object += '<td>';
+                        if (result[i].AllowanceAndDeduction) {
+                            object += '<i class="fa-solid fa-circle-check fa-lg text-success"></i>';
+                        } else {
+                            object += '<i class="fa-solid fa-circle-xmark fa-lg text-danger"></i>';
+                        }
+                        object += '</td>';
+                        object += '<td>';
+                        if (result[i].IsFixedPay) {
+                            object += '<i class="fa-solid fa-circle-check fa-lg text-success"></i>';
+                        } else {
+                            object += '<i class="fa-solid fa-circle-xmark fa-lg text-danger"></i>';
+                        }
+                        object += '</td>';
+                        object += '<td>';
+                        if (result[i].IsActive) {
+                            object += '<i class="fa-solid fa-circle-check fa-lg text-success"></i>';
+                        } else {
+                            object += '<i class="fa-solid fa-circle-xmark fa-lg text-danger"></i>';
+                        }
+                        object += '</td>';
+
+
+                        object += '<td><input type="hidden" id="salarytypeId_' + result[i].SalaryTypeId + '"> <a href="#" onclick="EditSalary(' + result[i].SalaryTypeId + ')"><i class="fa fa-edit"></i></a>&nbsp;<a href="#" onclick="ConfirmDelete(' + result[i].SalaryTypeId + ')"><i class="fa fa-trash text-danger"></i></a></td>';
+                        object += '</tr>';
+                    }
+                    $('#table_data').html(object);
+                }
+            },
+            error: function () {
+                alert("Data can't get");
+            }
+        });
+    }
+
+
+    /*Insert Data*/
+    function AddSalary() {
+        var result = validate();
+        if (result == false) {
+            return false;
+        }
+
+        var objData = new Object();
+        objData.SalaryTypeName = $('#SalaryType').val(),
+            objData.IsFixedPay = $('#FixedPay').prop('checked'),
+            objData.AllowanceAndDeduction = $('#AllowOrDeduct').prop('checked'),
+            objData.IsActive = $('#active').prop('checked'),
+            objData.SalaryTypeId = $("#hdnSalaryTId").val();
+
+        $.ajax({
+            url: 'AddSalaryType',
+            type: 'Post',
+            data: JSON.stringify(objData),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function (result) {
+                if (result == null || result == undefined || result.length == 0) {
+                    toastr.info(result.message, 'Information Alert', { timeOut: 3000 });
+                }
+                else {
+                    ShowSalaryData();
+                    HideModal();
+                    toastr.success(result.message, 'Success Alert', { timeOut: 3000 });
+                    $('#SalaryModal').modal('hide');
+                    ClearData();
+                    // Refresh the table after saving data
+                }
+            },
+            error: function () {
+                toastr.error('There is some problem to process your request', 'Eror Alert', { timeOut: 3000 });
+            }
+        });
+    }
+    function HideModal() {
+        $('#myModal1').modal('hide');
+        $('#SalaryModal').modal('hide');
+        ClearData();
+
+    }
+    function ClearData() {
+        $('#SalaryType').val('');
+        $('#active').prop('checked', false);
+        $('#AllowOrDeduct').prop('checked', false);
+        $('#FixedPay').prop('checked', false);
+
+
+        $('#SalaryType').css('border-color', 'lightgrey');
+        $('#active').css('border-color', 'lightgrey');
+        $('#AllowOrDeduct').css('border-color', 'lightgrey');
+        $('#FixedPay').css('border-color', 'lightgrey');
+
+    }
+    function validate() {
+        var isvalid = true;
+        if ($('#SalaryType').val().trim() == "") {
+            $('#SalaryType').css('border-color', 'Red');
+            isvalid = false;
+        }
+        else {
+            $('#SalaryType').css('border-color', 'lightgrey');
+            isvalid = true;
+        }
+        return isvalid;
+    }
+
+    $('#SalaryType').change(function () {
+        validate();
+    })
+
+    /*Edit Data*/
+    function EditSalary(id) {
+        var salarytypeId = id;
+        $.ajax({
+            url: 'EditSalaryType',
+            type: 'GET',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: { id: salarytypeId },
+            success: function (response) {
+                if (response == null || response == undefined) {
+                    toastr.info(result.message, 'Information Alert', { timeOut: 3000 });
+                } else {
+                    $('#SalaryModal').modal('show');
+                    $('#modalTitle').text('Update Salary Type');
+                    $('#AdSalary').css('display', 'none');
+                    $('#EditSalary').css('display', 'block');
+                    $('#SalaryType').val(response.SalaryTypeName);
+                    if (response.IsActive) {
+                        $('#active').prop('checked', true);
+                    } else {
+                        $('#active').prop('checked', false);
+                    }
+                    if (response.AllowanceAndDeduction) {
+                        $('#AllowOrDeduct').prop('checked', true);
+                    } else {
+                        $('#AllowOrDeduct').prop('checked', false);
+                    }
+                    if (response.IsFixedPay) {
+                        $('#FixedPay').prop('checked', true);
+                    } else {
+                        $('#FixedPay').prop('checked', false);
+                    }
+                    $("#hdnSalaryTId").val(response.SalaryTypeId);
+                    var salarytypeId = $('#salarytypeId_' + id).val();
+                    console.log("SalaryType ID:", salarytypeId);
+                }
+            },
+            error: function () {
+                alert('Unable to read the data');
+            }
+        });
+    }
+
+    /*Update Data*/
+    function UpdateSalary() {
+        var result = validate();
+        if (result == false) {
+            return false;
+        }
+        var getdata = $("#hdnSalaryTId").val();
+        var objDatas = new Object();
+        objDatas.SalaryTypeName = $('#SalaryType').val(),
+            objDatas.AllowanceAndDeduction = $('#AllowOrDeduct').prop('checked'),
+            objDatas.IsFixedPay = $('#FixedPay').prop('checked'),
+            objDatas.IsActive = $('#active').prop('checked'),
+            objDatas.SalaryTypeId = $("#hdnSalaryTId").val()
+
+        $.ajax({
+            url: 'UpdateSalaryType',
+            type: 'Post',
+            data: JSON.stringify(objDatas),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function (response) {
+                var a = response;
+                $('#SalaryModal').modal('hide');
+                ClearData();
+                ShowSalaryData(); // Refresh the table after saving data
+                toastr.success(response.message, 'Updated Alert', { timeOut: 3000 });
+            },
+            error: function () {
+                alert("Data can't be saved!");
+            }
+        });
+    }
+
+    /*Delete Data*/
+    var ConfirmDelete = function (SalaryTypeId) {
+        $("#hiddenSalaryTypeId").val(SalaryTypeId);
+        $("#myModal1").modal("show");
+    }
+    function DeleteSalary() {
+        $("#loaderDiv").show();
+        var saltId = $("#hiddenSalaryTypeId").val();
+        $.ajax({
+            type: "POST",
+            data: JSON.stringify({ SalaryTypeId: saltId }),
+            url: "DeleteUnusedSalaryTypes",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                $("#loaderDiv").hide();
+                $("#myModal1").modal("hide");
+                if (result.hasOwnProperty('error')) {
+                    toastr.error(result.message, 'This SalaryType is Used', { timeOut: 3000 });
+                } else {
+                    $("#row_" + saltId).remove();
+                    window.location.reload();
+                    toastr.success(result.message, 'Delete Alert', { timeOut: 3000 });
+                }
+            },
+            error: function () {
+                $("#loaderDiv").hide();
+                alert("Error deleting salary type.");
+            }
+        });
+    }
+
+</script>
+
+

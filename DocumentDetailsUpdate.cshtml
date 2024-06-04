@@ -1,0 +1,107 @@
+﻿@model DGHCM.Models.Emp_DocumentDetails
+@{
+    ViewBag.Title = "DocumentDetailsUpdate";
+}
+
+<style>
+    .preview-icon {
+        font-size: 50px;
+        color: #337ab7; 
+    }
+</style>
+<form class="needs-validation" name="dupdate" method="post" id="fileForm" enctype="multipart/form-data">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header  text-black d-flex flex-wrap justify-content-between align-items-center">
+
+                <div class="card-title text-black mb-0 p-0">Document Details</div>
+                <div>
+                    <button class="btn btn-transparent" type="submit" value="SaveAndSubmit" name="action"><i class="fa-solid fa-floppy-disk"></i><span>&nbsp;Update</span></button>
+                    <a href="~/Employee/DocumentDetailsIndex" class="btn btn-transparent" data-toggle="modal"><i class="fa-solid fa-circle-arrow-left"></i> <span> Back</span></a>
+                </div>
+            </div>
+
+            <div class="card-body">
+
+                <div id="DocumentSections">
+                    <div class="col-md-4 mb-3">
+                        <span class="details" value="">Employee Name </span>
+                        @Html.DropDownList("EmployeeList", null, "--select--", htmlAttributes: new { @id = "EmployeeId", @class = "form-control form-select selectpicker" })
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <span class="details">Document Type</span>
+                        @Html.DropDownList("DocumentType", null, "--select--", htmlAttributes: new { @id = "DocumentTypeId", @class = "form-control form-select selectpicker" })
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <span class="details">Description</span>
+                        <input type="text" class="form-control" id="credit" placeholder="enter description" name="Description" value="@Model.Description">
+                        <input type="hidden" class="form-control" id="id" placeholder="enter id" name="DocumentId" value="@Model.DocumentId">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="formFileMultiple" class="form-label">Document</label>
+                        <input class="form-control" type="file" name="file" id="fileInput" value="@Path.GetFileName(Model.DocumentPath)" multiple>
+                        <div id="previewContainer"></div>
+                    </div>
+
+                    <div class=" form-check form-switch col-md-4 mb-3">
+                        @if (Model.IsActive == true)
+                        {
+                            <input class="form-check-input" type="checkbox" id="active" name="IsActive" value="@Model.IsActive" checked>
+                        }
+                        else
+                        {
+                            <input class="form-check-input" type="checkbox" id="active" name="IsActive" value="@Model.IsActive">
+                        }
+                        <label class="form-check-label" for="flexSwitchCheckDefault">Status</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    function validate() {
+        let name = document.forms["dupdate"]["EmployeeName"].value;
+        if (name == "")
+            alert("Please enter the name");
+        return false;
+        let name = document.forms["dupdate"]["DocumentType"].value;
+        if (name == "")
+            alert("Please enter the name");
+        return false;
+        let name = document.forms["dupdate"]["Description"].value;
+        if (name == "")
+            alert("Please enter the name");
+        return false;
+        let name = document.forms["dupdate"]["Choose File/*(Max 300KB)*/"].value;
+        if (name == "")
+            alert("Please enter the name");
+        return false;
+    }
+    $(document).ready(function () {
+        $('#fileInput').on('change', function () {
+            var input = this;
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#previewContainer').html('<i class="fas fa-file-pdf"></i>'); 
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        });
+    });
+
+
+</script>
+
+
+@*@using (Html.BeginForm("DocumentDetailsCreate", "Upload", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        <div>
+            @Html.TextBox("file", "", new { type = "file" }) <br />
+            <input type="submit" value="@Path.GetFileName(Model.DocumentPath)" />
+            @ViewBag.Message
+        </div>
+    value="@Path.GetFileName(Model.DocumentPath)"
+    }*@

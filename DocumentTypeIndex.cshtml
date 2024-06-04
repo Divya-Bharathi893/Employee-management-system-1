@@ -1,0 +1,367 @@
+﻿@{
+    ViewBag.Title = "DocumentTypeIndex";
+}
+<style>
+    /*  .close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 18px;
+    }*/
+
+
+    .btn-close delete {
+        color: #444;
+        cursor: pointer;
+        left: 89%;
+        height: 2px;
+        width: 3px;
+        right: 16px;
+        top: 25px;
+        position: absolute;
+        padding: 10px !important;
+        transition: 250ms ease;
+    }
+
+        .btn-close delete:before, .btn-close delete:after {
+            height: 2px;
+            background: #444;
+            width: 100%;
+            top: 50%;
+            left: 5%;
+            position: absolute;
+            transition: 250ms ease;
+        }
+
+        .btn-close delete:before {
+            transform: rotate(-45deg);
+        }
+
+        .btn-close delete:after {
+            transform: rotate(45deg);
+        }
+
+        .btn-close delete:hover, .btn-close delete:focus {
+            border: 2px solid !important;
+            border-radius: 100%;
+        }
+
+            .btn-close delete:hover:before, .btn-close delete:focus:before, .btn-close delete:hover:after, .btn-close delete:focus:after {
+                width: 50%;
+                left: 25%;
+            }
+</style>
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header  text-black d-flex flex-wrap justify-content-between align-items-center">
+
+            <div class="card-title text-black mb-0 p-0">Document Type Details</div>
+            <div>
+                <button type="button" class="btn btn-transparent " id="btn-AddDoc"><i class="fa-solid fa-file-circle-plus"></i>&nbsp;Add Document Type</button>
+            </div>
+        </div>
+
+        <div class="card-body ">
+            <form class="main" name="Display" id="file">
+                <table class="table table-bordered table-striped table-hover mt-2">
+                    <thead class="bg-secondary-light">
+                        <tr align="center">
+                            <th scope="col">S.No</th>
+                            <th scope="col">Document Name</th>
+                            <th scope="col">Status</th>
+                            <th colspan=2>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center" id="table_data"></tbody>
+                </table>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+<div class="madal fade modal" id="DocumentModal" style="display:none">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                @*<div class="card-title text-black mb-0 p-0">Add Document Type</div>*@
+                <div class="modal-title" id="modalTitle">Add Document Type</div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form method="post" id="form">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Document Type</span>
+                        <input type="text" class="form-control" id="DType" name="DocumentTypeName" placeholder="enter type" required>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-text">
+                            <input class="form-check-input" type="checkbox" id="active" name="IsActive">
+                            <input hidden id="hdnDocTId" name="hdndocTId" />
+                        </div>
+                        <span class="input-group-text">IsActive</span>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-danger" data-dismiss="modal" onclick="HideModal();">Cancel</a>
+                <a href="#" class="btn btn-success" onclick=" AddDocType();" id="AddDType">Save</a>
+                <a href="#" class="btn btn-success" onclick="UpdateDocumentType();" id="EditDType" type="submit">Update</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur fade" id="myModal1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header justify-content-between align-items-center">
+
+                <h5 class="modal-title">Delete Document Type</h5>
+                <button type="button" class="btn-close delete" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <h4>Are you Sure</h4>
+                <p>You want to delete this.</p>
+                <div style="text-align:center;display:none" id="loaderDiv" ;></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-danger" data-dismiss="modal" onclick="HideModal();">Cancel</a>
+                 <a href="#" class="btn btn-success" onclick="DeleteDocumentType()">Confirm</a>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="hiddenDocumentTypeId" value="@Url.Action("DocumentTypeList", "EmployeeController")" />
+</div>
+
+<script>
+    /*Read Data*/
+    $(document).ready(function () {
+        ShowDocumentTypeData();
+    });
+    function ShowDocumentTypeData() {
+        var url = $('#hiddenDocumentTypeId').val();
+        $.ajax({
+            url: 'DocumentTypeList',
+            type: 'Get',
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            success: function (result) {
+                var a = result;
+                if (result.length == 0) {
+                    var object = "";
+                    object += '<tr>';
+                    object += '<td colspan="6">' + 'Document not available' + '</td>';
+                    object += '</tr>';
+                    $('#table_data').html(object);
+                }
+                else {
+                    var object = "";
+                    for (var i = 0; i < result.length; i++) {
+                        object += '<tr>';
+                        object += '<td>' + [i + 1] + '</td>';
+                        object += '<td class="text-start">' + result[i].DocumentName + '</td>';
+                        object += '<td>';
+                        if (result[i].IsActive) {
+                            object += '<span class="badge rounded-pill bg-success">Active</span>';
+                        }
+                        else {
+                            object += '<span class="badge rounded-pill bg-danger">Inactive</span>';
+                        }
+                        object += '</td>';
+                        object += '<td><input type="hidden" id="documenttypeId_' + result[i].DocumentTypeId + '"> <a href="#" onclick="EditDocumentType(' + result[i].DocumentTypeId + ')"><i class="fa fa-edit"></i></a>&nbsp;<a href="#" onclick="ConfirmDelete(' + result[i].DocumentTypeId + ')"><i class="fa fa-trash text-danger"></i></a></td>';
+                        object += '</tr>';
+                    }
+                    $('#table_data').html(object);
+                }
+            }
+            ,
+            error: function () {
+                toastr.info(data.message, 'Data cant be saved', { timeOut: 3000 });
+            }
+        });
+    }
+
+    $('#btn-AddDoc').click(function () {
+        $('#DocumentModal').modal('show');
+        $('#modalTitle').text('Add Document Type');
+        $('#AddDType').css('display', 'block');
+        $('#EditDType').css('display', 'none');
+
+    });
+    /*Insert data*/
+    function AddDocType() {
+        var result = validate();
+        if (result == false) {
+            return false;
+        }
+
+        var objData = new Object();
+        objData.DocumentName = $('#DType').val(),
+                objData.IsActive = $('#active').prop('checked'),
+                objData.DocumentTypeId = $("#hdnDocTId").val();
+
+        $.ajax({
+            url: 'AddDocumentType',
+            type: 'Post',
+            data: JSON.stringify(objData),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function (data) {
+                if (data == null || data == undefined || data.length == 0) {
+                    toastr.info(data.message, 'Information Alert', { timeOut: 3000 });
+                }
+                else {
+                    ShowDocumentTypeData();
+                    HideModal();                   
+                    toastr.success(data.message, 'Success Alert', { timeOut: 3000 });
+                    $('#DocumentModal').modal('hide');
+                    ClearData();
+                    // Refresh the table after saving data
+                }
+            },
+            error: function () {
+                toastr.info(data.message, 'Data cant be saved', { timeOut: 3000 });
+            }
+        });
+    }
+
+    /*Hide data*/
+    function HideModal() {
+        ClearData();
+        $('#myModal1').modal('hide');
+        $('#DocumentModal').modal('hide');
+    }
+
+    /*Clear data*/
+    function ClearData() {
+        $('#DType').val('');
+        $('#active').prop('checked', false);
+
+        $('#DType').css('border-color', 'lightgrey');
+        $('#active').css('border-color', 'lightgrey');
+
+    }
+
+    /*validate data*/
+    function validate() {
+        var isvalid = true;
+        if ($('#DType').val().trim() == "") {
+            $('#DType').css('border-color', 'Red');
+            isvalid = false;
+        }
+        else {
+            $('#DType').css('border-color', 'lightgrey');
+            isvalid = true;
+        }
+        return isvalid;
+    }
+    $('#DType').change(function () {
+        validate();
+    })
+    /*Edit*/
+    function EditDocumentType(id) {
+        var documenttypeId = id;
+        $.ajax({
+            url: 'EditDocumentType',
+            type: 'GET',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: { id: documenttypeId },
+            success: function (response) {
+                if (response == null || response == undefined) {
+                    alert('Unable to read the data');
+                } else {
+                    $('#DocumentModal').modal('show');
+                    $('#modalTitle').text('Update Document Type');
+                    /* $('#AddSalary').css('display', 'none');*/
+                    $('#AddDType').css('display', 'none');
+                    $('#EditDType').css('display', 'block');
+                    $('#DType').val(response.DocumentName);
+                    if (response.IsActive) {
+                        $('#active').prop('checked', true);
+                    } else {
+                        $('#active').prop('checked', false);
+                    }
+                    $("#hdnDocTId").val(response.DocumentTypeId);
+                    var documenttypeId = $('#documenttypeId_' + id).val();
+                    console.log("DocumentType ID:", documenttypeId);
+
+                }
+            },
+            error: function () {
+                toastr.info(response.message, 'Unable to read the data', { timeOut: 3000 });
+            }
+        });
+    }
+
+
+    /*Update data*/
+    function UpdateDocumentType() {
+        var result = validate();
+        if (result == false) {
+            return false;
+        }
+        var getdata = $("#hdnDocTId").val();
+        var objDatas = new Object();
+        objDatas.DocumentName = $('#DType').val(),
+                objDatas.IsActive = $('#active').prop('checked'),
+                objDatas.DocumentTypeId = $("#hdnDocTId").val()
+
+        $.ajax({
+            url: 'UpdateDocumentType',
+            type: 'Post',
+            data: JSON.stringify(objDatas),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function (response) {
+                var a = response;
+                toastr.success(response.message, 'Updated Alert', { timeOut: 3000 });
+                $('#DocumentModal').modal('hide');
+                ClearData();
+                ShowDocumentTypeData(); // Refresh the table after saving data
+            },
+            error: function () {
+                toastr.info(response.message, "Data can't be saved", { timeOut: 3000 });
+            }
+        });
+    }
+
+    /*Delete data*/
+    var ConfirmDelete = function (DocumentTypeId) {
+        $("#hiddenDocumentTypeId").val(DocumentTypeId);
+        $("#myModal1").modal("show");
+    }
+    function DeleteDocumentType() {
+        $("#loaderDiv").show();
+        var doctId = $("#hiddenDocumentTypeId").val();
+        $.ajax({
+            type: "POST",
+            data: JSON.stringify({ DocumentTypeId: doctId }),
+            url: "DeleteUnusedDocumentTypes",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                $("#loaderDiv").hide();
+                $("#myModal1").modal("hide");
+                if (result.hasOwnProperty('error')) {
+                    toastr.error(result.message, 'This SalaryType is Used', { timeOut: 3000 });
+                } else {
+                    $("#row_" + doctId).remove();
+                    window.location.reload();
+                    toastr.success(result.message, 'Delete Alert', { timeOut: 3000 });
+                }
+            },
+            error: function () {
+                $("#loaderDiv").hide();
+                alert("Error deleting document type.");
+            }
+        });
+    }
+
+</script>
+
+

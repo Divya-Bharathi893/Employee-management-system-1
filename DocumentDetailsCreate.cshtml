@@ -1,0 +1,71 @@
+﻿@model List<DGHCM.ViewModel.DocumentVM>
+@{
+    ViewBag.Title = "DocumentDetailsCreate";
+}
+
+<script src="~/Scripts/bootstrap.bundle.js"></script>
+<form class="needs-validation" name="dcreate" method="post" id="fileForm" enctype="multipart/form-data">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header  text-black d-flex flex-wrap justify-content-between align-items-center">
+
+                <div class="card-title text-black mb-0 p-0">Document Details</div>
+                <div>
+                    <button class="btn bg-black border border-black text-white" type="submit" value="SaveAndSubmit" name="action"><i class="fa-solid fa-floppy-disk"></i><span>&nbsp;Save</span></button>
+                    <a href="~/Employee/DocumentDetailsIndex" class="btn btn-transparent border border-black" data-toggle="modal"><i class="fa-solid fa-circle-arrow-left"></i> <span> Back</span></a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <span class="input-group-text">EmployeeName</span>
+                    @Html.DropDownList("EmployeeList", null, "--select--", htmlAttributes: new { @id = "EmployeeId", @class = "form-control form-select selectpicker" })
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">DocumentType</span>
+                    @Html.DropDownList("DocumentType", null, "--select--", htmlAttributes: new { @id = "DocumentType", @class = "form-control form-select selectpicker" })
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Document</span>
+                    <input class="form-control" type="file" name="file" id="fileInput" multiple>
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Description</span>
+                    <input type="text" class="form-control" id="credit" placeholder="enter description" name="Description">
+                </div>
+
+                <div class="input-group mb-3">
+                    <div class="input-group-text">
+                        <input class="form-check-input col-sm-2" style="float: right;" type="checkbox" id="active" name="IsActive">
+                    </div>
+                    <span class="input-group-text">IsActive</span>
+                </div>
+                </div>
+            </div>
+        </div>
+</form>
+
+    <script>
+        function validate() {
+            let name = document.forms["dcreate"]["EmployeeName"].value;
+            if (name == "")
+                alert("Please enter the name");
+            return false;
+            let name = document.forms["dcreate"]["DocumentType"].value;
+            if (name == "")
+                alert("Please enter the name");
+            return false;
+            let name = document.forms["dcreate"]["Description"].value;
+            if (name == "")
+                alert("Please enter the name");
+            return false;
+            let name = document.forms["dcreate"]["Upload/*(Max 300KB)*/"].value;
+            if (name == "")
+                alert("Please enter the name");
+            return false;
+
+
+
+        }
+    </script>
+
